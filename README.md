@@ -1,50 +1,177 @@
-# Welcome to your Expo app 👋
+# 自尊心ストック（MVP）
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+キャッチコピー: **小さな「できた」を、貯めていく**
 
-## Get started
+自分専用の「できたこと」記録アプリの最小実装です。
+SNS要素（公開・コメント・いいね・共有）は含みません。
 
-1. Install dependencies
+## 1. ディレクトリ構成（提案 + 実装済み）
 
-   ```bash
-   npm install
-   ```
-
-2. Start the app
-
-   ```bash
-   npx expo start
-   ```
-
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
-
-```bash
-npm run reset-project
+```text
+App.tsx
+src/
+   components/
+      EditStockModal.tsx
+      RandomStockModal.tsx
+      StockCard.tsx
+   hooks/
+      useAuth.ts
+   lib/
+      firebase.ts
+   screens/
+      AuthScreen.tsx
+      HomeScreen.tsx
+   services/
+      authService.ts
+      stockService.ts
+   theme/
+      colors.ts
+   types/
+      index.ts
+   utils/
+      formatDate.ts
+.env.example
+eas.json
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+## 2. 必要パッケージ
 
-## Learn more
+このMVPで利用する主なパッケージ:
 
-To learn more about developing your project with Expo, look at the following resources:
+- `expo`
+- `react`
+- `react-native`
+- `typescript`
+- `firebase`
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+## 3. 各ファイルの役割
 
-## Join the community
+- `App.tsx`: 認証状態で `AuthScreen` / `HomeScreen` を切り替え
+- `src/lib/firebase.ts`: Firebase初期化（環境変数から設定）
+- `src/hooks/useAuth.ts`: `onAuthStateChanged` による認証状態監視
+- `src/services/authService.ts`: 新規登録・ログイン・ログアウト・アカウント削除
+- `src/services/stockService.ts`: Firestore CRUD + `onSnapshot` リアルタイム購読
+- `src/screens/AuthScreen.tsx`: ログイン/新規登録UI
+- `src/screens/HomeScreen.tsx`: 投稿作成、履歴一覧、編集モーダル、ランダム表示モーダル、ログアウト/削除
+- `src/components/StockCard.tsx`: 投稿カード表示（編集/削除ボタン）
+- `src/components/EditStockModal.tsx`: 編集UI（文字数表示つき）
+- `src/components/RandomStockModal.tsx`: 過去投稿ランダム1件表示
+- `src/types/index.ts`: `UserProfile` と `Stock` 型
+- `src/utils/formatDate.ts`: 日本語日時フォーマット
 
-Join our community of developers creating universal apps.
+## 4. ローカル起動手順
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+1. 依存関係をインストール
+
+```bash
+npm install
+```
+
+2. `.env.example` を `.env` にコピーして Firebase 値を設定
+
+3. 起動
+
+```bash
+npx expo start
+```
+
+## 5. Firebase 側の設定手順
+
+1. Firebase Console でプロジェクト作成
+2. Authentication → Sign-in method で **メール/パスワード** を有効化
+3. Firestore Database を作成（本番モード推奨）
+4. Webアプリを追加して設定値を取得
+5. `.env` に以下を設定
+
+```env
+EXPO_PUBLIC_FIREBASE_API_KEY=...
+EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN=...
+EXPO_PUBLIC_FIREBASE_PROJECT_ID=...
+EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET=...
+EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=...
+EXPO_PUBLIC_FIREBASE_APP_ID=...
+```
+
+## 6. Firestoreデータ構造
+
+```text
+users/{uid}
+   uid
+   email
+   createdAt
+
+users/{uid}/stocks/{stockId}
+   text
+   createdAt
+   updatedAt
+```
+
+## 7. Security Rules（たたき台）
+
+```txt
+rules_version = '2';
+service cloud.firestore {
+   match /databases/{database}/documents {
+      match /users/{userId} {
+         allow read, write: if request.auth != null && request.auth.uid == userId;
+
+         match /stocks/{stockId} {
+            allow read, write: if request.auth != null && request.auth.uid == userId;
+         }
+      }
+   }
+}
+```
+
+必要に応じて、`text` の長さや必須フィールドを Rules 側でさらに厳密化してください。
+
+本リポジトリには本番寄りの例として [firestore.rules](firestore.rules) も追加済みです。
+適用例:
+
+```bash
+firebase deploy --only firestore:rules
+```
+
+## 8. EAS Build / Submit（iOS）
+
+1. Expo アカウントでログイン
+
+```bash
+npx expo login
+```
+
+2. EAS CLI（未導入なら）
+
+```bash
+npm i -g eas-cli
+```
+
+3. 初期設定
+
+```bash
+eas build:configure
+```
+
+4. iOSビルド
+
+```bash
+eas build -p ios --profile production
+```
+
+5. App Store Connect へ提出
+
+```bash
+eas submit -p ios --latest
+```
+
+## 実装済みMVP機能
+
+- メール/パスワード認証（新規登録・ログイン・ログアウト・削除）
+- 投稿作成（trim、空文字禁止、最大200文字、改行可）
+- 投稿一覧（自分のみ、新しい順、リアルタイム反映）
+- 投稿編集（モーダル、既存値初期表示、文字数表示、保存時 `updatedAt` 更新）
+- 投稿削除（確認ダイアログ）
+- ホーム表示時のランダム過去投稿モーダル
+- 空状態メッセージ
+- 投稿成功時メッセージ（Alert）
+- アカウント削除時に `users/{uid}/stocks` と `users/{uid}` を先に削除してから Auth ユーザーを削除
