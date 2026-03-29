@@ -1,9 +1,10 @@
+import { NavigationContainer } from '@react-navigation/native';
 import React from 'react';
 import { ActivityIndicator, StatusBar, StyleSheet, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from './src/hooks/useAuth';
+import { TabNavigator } from './src/navigation/TabNavigator';
 import { AuthScreen } from './src/screens/AuthScreen';
-import { HomeScreen } from './src/screens/HomeScreen';
 import { colors } from './src/theme/colors';
 
 export default function App() {
@@ -11,20 +12,33 @@ export default function App() {
 
   if (loading) {
     return (
-      <SafeAreaView style={styles.container}>
-        <StatusBar barStyle="dark-content" />
-        <View style={styles.centered}>
-          <ActivityIndicator size="large" color={colors.primary} />
-        </View>
-      </SafeAreaView>
+      <SafeAreaProvider>
+        <SafeAreaView style={styles.container}>
+          <StatusBar barStyle="dark-content" />
+          <View style={styles.centered}>
+            <ActivityIndicator size="large" color={colors.primary} />
+          </View>
+        </SafeAreaView>
+      </SafeAreaProvider>
     );
   }
 
   return (
-    <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="dark-content" />
-      {user ? <HomeScreen user={user} /> : <AuthScreen />}
-    </SafeAreaView>
+    <SafeAreaProvider>
+      <View style={styles.container}>
+        <StatusBar barStyle="dark-content" />
+
+        {user ? (
+          <NavigationContainer>
+            <TabNavigator user={user} />
+          </NavigationContainer>
+        ) : (
+          <SafeAreaView style={styles.container}>
+            <AuthScreen />
+          </SafeAreaView>
+        )}
+      </View>
+    </SafeAreaProvider>
   );
 }
 

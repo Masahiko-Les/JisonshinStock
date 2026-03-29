@@ -11,17 +11,20 @@ type Props = {
 };
 
 export const RandomStockModal = ({ visible, stock, onClose }: Props) => {
-  if (!stock) {
-    return null;
-  }
-
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
       <View style={styles.overlay}>
         <View style={styles.content}>
-          <Text style={styles.title}>過去のストック</Text>
-          <Text style={styles.text}>{stock.text}</Text>
-          <Text style={styles.date}>{formatDateJa(stock.createdAt)}</Text>
+          <Text style={styles.title}>ストックランダム再生</Text>
+
+          {stock ? (
+            <>
+              <Text style={styles.text}>{stock.text}</Text>
+              <Text style={styles.date}>{formatDateJa(stock.createdAt)}</Text>
+            </>
+          ) : (
+            <Text style={styles.emptyText}>まだストックがありません。投稿してから再生してください。</Text>
+          )}
 
           <Pressable style={styles.closeButton} onPress={onClose}>
             <Text style={styles.closeText}>閉じる</Text>
@@ -62,6 +65,12 @@ const styles = StyleSheet.create({
   },
   date: {
     fontSize: 12,
+    color: colors.textSecondary,
+    marginBottom: spacing.md,
+  },
+  emptyText: {
+    fontSize: 15,
+    lineHeight: 24,
     color: colors.textSecondary,
     marginBottom: spacing.md,
   },
