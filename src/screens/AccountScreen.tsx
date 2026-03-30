@@ -1,9 +1,11 @@
 import { User } from 'firebase/auth';
-import React from 'react';
-import { Alert, Pressable, StyleSheet, Text, View } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { AppHeader } from '../components/AppHeader';
+import { PlantGrowthCard } from '../components/PlantGrowthCard';
 import { authService } from '../services/authService';
+import { stockService } from '../services/stockService';
 import { colors, radius, spacing } from '../theme/colors';
 
 type Props = {
@@ -11,6 +13,16 @@ type Props = {
 };
 
 export const AccountScreen = ({ user }: Props) => {
+  const [stockCount, setStockCount] = useState(0);
+
+  useEffect(() => {
+    const unsubscribe = stockService.subscribeUserStocks(user.uid, (stocks) => {
+      setStockCount(stocks.length);
+    });
+
+    return unsubscribe;
+  }, [user.uid]);
+
   const handleLogout = async () => {
     try {
       await authService.signOut();
@@ -45,10 +57,13 @@ export const AccountScreen = ({ user }: Props) => {
     <SafeAreaView style={styles.container} edges={['top']}>
       <AppHeader />
 
-      <View style={styles.content}>
+      <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
         <View style={styles.card}>
           <Text style={styles.title}>アカウント</Text>
-          <Text style={styles.description}>ログアウトやアカウント削除を行えます。</Text>
+          <View style={styles.emailRow}>
+            <Text style={styles.emailLabel}>メールアドレス</Text>
+            <Text style={styles.emailValue}>{user.email}</Text>
+          </View>
 
           <Pressable style={styles.logoutButton} onPress={handleLogout}>
             <Text style={styles.logoutText}>ログアウト</Text>
@@ -58,7 +73,11 @@ export const AccountScreen = ({ user }: Props) => {
             <Text style={styles.deleteText}>アカウント削除</Text>
           </Pressable>
         </View>
-      </View>
+
+        <View style={styles.growthSection}>
+          <PlantGrowthCard count={stockCount} plantType="default" />
+        </View>
+      </ScrollView>
     </SafeAreaView>
   );
 };
@@ -69,8 +88,9 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background,
   },
   content: {
-    flex: 1,
     paddingHorizontal: spacing.lg,
+    paddingTop: 50,
+    paddingBottom: 60,
   },
   card: {
     backgroundColor: colors.card,
@@ -79,11 +99,32 @@ const styles = StyleSheet.create({
     borderColor: colors.border,
     padding: spacing.lg,
   },
+  growthSection: {
+    marginTop: spacing.md,
+  },
   title: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: '700',
     color: colors.textPrimary,
     marginBottom: spacing.xs,
+  },
+  emailRow: {
+    backgroundColor: colors.card,
+    borderRadius: radius.md,
+    borderWidth: 1,
+    borderColor: colors.border,
+    padding: spacing.md,
+    marginBottom: spacing.md,
+  },
+  emailLabel: {
+    fontSize: 12,
+    color: colors.textSecondary,
+    marginBottom: 4,
+  },
+  emailValue: {
+    fontSize: 15,
+    color: colors.textPrimary,
+    fontWeight: '600',
   },
   description: {
     color: colors.textSecondary,

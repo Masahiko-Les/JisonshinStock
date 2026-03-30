@@ -13,19 +13,22 @@ export const AppHeader = () => {
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: colors.background,
+    backgroundColor: colors.card,
     paddingHorizontal: spacing.lg,
     paddingTop: spacing.sm,
     paddingBottom: spacing.md,
+    alignItems: 'center',
   },
   appName: {
-    fontSize: 30,
+    fontSize: 22,
     fontWeight: '700',
     color: colors.textPrimary,
     marginBottom: spacing.xs,
+    textAlign: 'center',
   },
   catch: {
     fontSize: 14,
     color: colors.textSecondary,
+    textAlign: 'center',
   },
 });

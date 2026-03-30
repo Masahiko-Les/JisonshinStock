@@ -51,7 +51,7 @@ export const StockScreen = ({ user }: Props) => {
 
       Alert.alert(
         '投稿しました',
-        'おめでとうございます。できたことを一つストックしました。頑張りましたね',
+        'できたことを1つストックしました。頑張りましたね。',
       );
     } catch (error) {
       const message = error instanceof Error ? error.message : '投稿に失敗しました。';
@@ -113,9 +113,11 @@ export const StockScreen = ({ user }: Props) => {
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
-      <AppHeader />
-
-      <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+      <View pointerEvents="none" style={styles.topBackdrop} />
+      <ScrollView style={styles.scroll} contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+        <View style={styles.headerWrapper}>
+          <AppHeader />
+        </View>
         <Pressable style={styles.randomButton} onPress={handleRandomPlay}>
           <Text style={styles.randomButtonText}>ストックランダム再生</Text>
         </Pressable>
@@ -185,10 +187,27 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
+    position: 'relative',
+  },
+  topBackdrop: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: 240,
+    backgroundColor: colors.card,
+  },
+  scroll: {
+    backgroundColor: 'transparent',
   },
   content: {
     paddingHorizontal: spacing.lg,
     paddingBottom: 60,
+    backgroundColor: colors.background,
+  },
+  headerWrapper: {
+    marginHorizontal: -spacing.lg,
+    marginBottom: spacing.md,
   },
   randomButton: {
     marginBottom: spacing.md,
