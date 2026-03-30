@@ -1,9 +1,11 @@
 import { User } from 'firebase/auth';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { AppHeader } from '../components/AppHeader';
-import { PlantGrowthCard } from '../components/PlantGrowthCard';
+import { PlantGrowthCard, PlantGrowthCardRef } from '../components/PlantGrowthCard';
+import { WaterDropAnimation, WaterDropAnimationRef } from '../components/WaterDropAnimation';
+import { useWaterDrop } from '../contexts/WaterDropContext';
 import { authService } from '../services/authService';
 import { stockService } from '../services/stockService';
 import { colors, radius, spacing } from '../theme/colors';
@@ -13,6 +15,9 @@ type Props = {
 };
 
 export const AccountScreen = ({ user }: Props) => {
+  const waterDropRef = useRef<WaterDropAnimationRef>(null);
+  const plantRef = useRef<PlantGrowthCardRef>(null);
+  const { shouldPlay, resetWaterDrop } = useWaterDrop();
   const [stockCount, setStockCount] = useState(0);
 
   useEffect(() => {
@@ -22,6 +27,14 @@ export const AccountScreen = ({ user }: Props) => {
 
     return unsubscribe;
   }, [user.uid]);
+
+  useEffect(() => {
+    if (shouldPlay) {
+      waterDropRef.current?.play();
+      setTimeout(() => plantRef.current?.pulse(), 400);
+      resetWaterDrop();
+    }
+  }, [shouldPlay, resetWaterDrop]);
 
   const handleLogout = async () => {
     try {
@@ -75,7 +88,8 @@ export const AccountScreen = ({ user }: Props) => {
         </View>
 
         <View style={styles.growthSection}>
-          <PlantGrowthCard count={stockCount} plantType="default" />
+          <PlantGrowthCard ref={plantRef} count={stockCount} plantType="default" />
+          <WaterDropAnimation ref={waterDropRef} />
         </View>
       </ScrollView>
     </SafeAreaView>

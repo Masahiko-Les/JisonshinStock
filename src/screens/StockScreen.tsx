@@ -1,4 +1,5 @@
 import { User } from 'firebase/auth';
+import { useNavigation } from '@react-navigation/native';
 import React, { useEffect, useMemo, useState } from 'react';
 import {
     Alert,
@@ -14,6 +15,7 @@ import { AppHeader } from '../components/AppHeader';
 import { EditStockModal } from '../components/EditStockModal';
 import { RandomStockModal } from '../components/RandomStockModal';
 import { StockCard } from '../components/StockCard';
+import { useWaterDrop } from '../contexts/WaterDropContext';
 import { MAX_LENGTH, stockService } from '../services/stockService';
 import { colors, radius, spacing } from '../theme/colors';
 import { Stock } from '../types';
@@ -23,6 +25,8 @@ type Props = {
 };
 
 export const StockScreen = ({ user }: Props) => {
+  const navigation = useNavigation<any>();
+  const { triggerWaterDrop } = useWaterDrop();
   const [inputText, setInputText] = useState('');
   const [stocks, setStocks] = useState<Stock[]>([]);
   const [loadingStocks, setLoadingStocks] = useState(true);
@@ -52,6 +56,15 @@ export const StockScreen = ({ user }: Props) => {
       Alert.alert(
         '投稿しました',
         'できたことを1つストックしました。頑張りましたね。',
+        [
+          {
+            text: 'OK',
+            onPress: () => {
+              triggerWaterDrop();
+              navigation.navigate('Account');
+            },
+          },
+        ],
       );
     } catch (error) {
       const message = error instanceof Error ? error.message : '投稿に失敗しました。';

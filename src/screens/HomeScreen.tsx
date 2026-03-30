@@ -1,5 +1,5 @@
 import { User } from 'firebase/auth';
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
     Alert,
     Pressable,
@@ -12,6 +12,7 @@ import {
 import { EditStockModal } from '../components/EditStockModal';
 import { RandomStockModal } from '../components/RandomStockModal';
 import { StockCard } from '../components/StockCard';
+import { WaterDropAnimation, WaterDropAnimationRef } from '../components/WaterDropAnimation';
 import { authService } from '../services/authService';
 import { MAX_LENGTH, stockService } from '../services/stockService';
 import { colors, radius, spacing } from '../theme/colors';
@@ -22,6 +23,7 @@ type Props = {
 };
 
 export const HomeScreen = ({ user }: Props) => {
+  const waterDropRef = useRef<WaterDropAnimationRef>(null);
   const [inputText, setInputText] = useState('');
   const [stocks, setStocks] = useState<Stock[]>([]);
   const [loadingStocks, setLoadingStocks] = useState(true);
@@ -59,6 +61,7 @@ export const HomeScreen = ({ user }: Props) => {
       setPosting(true);
       await stockService.createStock(user.uid, inputText);
       setInputText('');
+      waterDropRef.current?.play();
 
       Alert.alert(
         '投稿しました',
@@ -196,6 +199,8 @@ export const HomeScreen = ({ user }: Props) => {
           </Pressable>
         </View>
       </ScrollView>
+
+      <WaterDropAnimation ref={waterDropRef} />
 
       <EditStockModal
         visible={showEditModal}

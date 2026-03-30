@@ -2,6 +2,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import React from 'react';
 import { ActivityIndicator, StatusBar, StyleSheet, View } from 'react-native';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
+import { WaterDropProvider } from './src/contexts/WaterDropContext';
 import { useAuth } from './src/hooks/useAuth';
 import { TabNavigator } from './src/navigation/TabNavigator';
 import { AuthScreen } from './src/screens/AuthScreen';
@@ -29,9 +30,11 @@ export default function App() {
         <StatusBar barStyle="dark-content" />
 
         {user ? (
-          <NavigationContainer>
-            <TabNavigator user={user} />
-          </NavigationContainer>
+          <WaterDropProvider>
+            <NavigationContainer>
+              <TabNavigator user={user} />
+            </NavigationContainer>
+          </WaterDropProvider>
         ) : (
           <SafeAreaView style={styles.container}>
             <AuthScreen />
