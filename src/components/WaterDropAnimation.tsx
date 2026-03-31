@@ -46,7 +46,7 @@ export const WaterDropAnimation = forwardRef<WaterDropAnimationRef>((_, ref) => 
         styles.drop,
         {
           opacity,
-          transform: [{ translateY }, { scale }],
+          transform: [{ translateY }, { scale }, { rotate: '45deg' }],
         },
       ]}
     />
@@ -65,7 +65,6 @@ const styles = StyleSheet.create({
     borderBottomRightRadius: 14,
     borderBottomLeftRadius: 14,
     borderTopLeftRadius: 0,
-    transform: [{ rotate: '-45deg' }],
     zIndex: 10,
   },
 });

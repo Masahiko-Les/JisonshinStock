@@ -95,9 +95,14 @@ export const StockScreen = ({ user }: Props) => {
           <AppHeader />
         </View>
 
-        <Pressable style={styles.randomButton} onPress={handleRandomPlay}>
-          <Text style={styles.randomButtonText}>ストックランダム再生</Text>
-        </Pressable>
+        <View style={styles.randomCard}>
+          <Text style={styles.randomMessage}>
+            小さなできたことが、あなたの力になります。過去の自分を振り返って、今の自分を励ましてみましょう
+          </Text>
+          <Pressable style={styles.randomButton} onPress={handleRandomPlay}>
+            <Text style={styles.randomButtonText}>できたことを思い出す</Text>
+          </Pressable>
+        </View>
 
         <Text style={styles.sectionTitle}>あなたのストック</Text>
 
@@ -166,8 +171,21 @@ const styles = StyleSheet.create({
     marginHorizontal: -spacing.lg,
     marginBottom: spacing.md,
   },
+  randomCard: {
+    backgroundColor: colors.card,
+    borderRadius: radius.lg,
+    borderWidth: 1,
+    borderColor: colors.border,
+    padding: spacing.md,
+    marginBottom: spacing.lg,
+  },
+  randomMessage: {
+    fontSize: 14,
+    color: colors.textSecondary,
+    lineHeight: 22,
+    marginBottom: spacing.sm,
+  },
   randomButton: {
-    marginBottom: spacing.md,
     backgroundColor: colors.primarySoft,
     borderRadius: radius.md,
     borderWidth: 1,

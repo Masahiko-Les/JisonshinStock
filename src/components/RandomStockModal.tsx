@@ -4,6 +4,15 @@ import { colors, radius, spacing } from '../theme/colors';
 import { Stock } from '../types';
 import { formatDateJa } from '../utils/formatDate';
 
+const daysAgo = (date: Date): string => {
+  const today = new Date();
+  const todayDate = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+  const postDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+  const diff = Math.round((todayDate.getTime() - postDate.getTime()) / (1000 * 60 * 60 * 24));
+  if (diff === 0) return '今日できたこと';
+  return `${diff}日前にできたこと`;
+};
+
 type Props = {
   visible: boolean;
   stock: Stock | null;
@@ -15,7 +24,7 @@ export const RandomStockModal = ({ visible, stock, onClose }: Props) => {
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
       <View style={styles.overlay}>
         <View style={styles.content}>
-          <Text style={styles.title}>ストックランダム再生</Text>
+          <Text style={styles.title}>{stock ? daysAgo(stock.createdAt) : 'できたことを思い出す'}</Text>
 
           {stock ? (
             <>

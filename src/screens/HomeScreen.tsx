@@ -14,7 +14,7 @@ import { AppHeader } from '../components/AppHeader';
 import { PlantGrowthCard, PlantGrowthCardRef } from '../components/PlantGrowthCard';
 
 import { WaterDropAnimation, WaterDropAnimationRef } from '../components/WaterDropAnimation';
-import { useWaterDrop } from '../contexts/WaterDropContext';
+
 import { MAX_LENGTH, stockService } from '../services/stockService';
 import { colors, radius, spacing } from '../theme/colors';
 import { Stock } from '../types';
@@ -26,7 +26,6 @@ type Props = {
 
 export const HomeScreen = ({ user }: Props) => {
   const navigation = useNavigation<any>();
-  const { triggerWaterDrop, shouldPlay, resetWaterDrop } = useWaterDrop();
   const waterDropRef = useRef<WaterDropAnimationRef>(null);
   const plantRef = useRef<PlantGrowthCardRef>(null);
   const [inputText, setInputText] = useState('');
@@ -40,14 +39,6 @@ export const HomeScreen = ({ user }: Props) => {
     return unsubscribe;
   }, [user.uid]);
 
-  useEffect(() => {
-    if (shouldPlay) {
-      waterDropRef.current?.play();
-      setTimeout(() => plantRef.current?.pulse(), 400);
-      resetWaterDrop();
-    }
-  }, [shouldPlay, resetWaterDrop]);
-
   const countText = useMemo(() => `${inputText.length} / ${MAX_LENGTH}`, [inputText.length]);
 
   const handleCreateStock = async () => {
@@ -55,19 +46,20 @@ export const HomeScreen = ({ user }: Props) => {
       setPosting(true);
       await stockService.createStock(user.uid, inputText);
       setInputText('');
-      Alert.alert(
-        '投稿しました',
-        'できたことを1つストックしました。頑張りましたね。',
-        [
-          {
-            text: 'OK',
-            onPress: () => {
-              triggerWaterDrop();
-              navigation.navigate('Stock');
+      waterDropRef.current?.play();
+      setTimeout(() => plantRef.current?.pulse(), 400);
+      setTimeout(() => {
+        Alert.alert(
+          '投稿しました',
+          'できたことを1つストックしました。頑張りましたね。',
+          [
+            {
+              text: 'OK',
+              onPress: () => navigation.navigate('Stock'),
             },
-          },
-        ],
-      );
+          ],
+        );
+      }, 900);
     } catch (error) {
       const message = error instanceof Error ? error.message : '投稿に失敗しました。';
       Alert.alert('エラー', message);
@@ -106,7 +98,7 @@ export const HomeScreen = ({ user }: Props) => {
             onPress={handleCreateStock}
             disabled={!inputText.trim() || posting}
           >
-            <Text style={styles.postButtonText}>{posting ? '投稿中...' : '投稿する'}</Text>
+            <Text style={styles.postButtonText}>{posting ? '投稿中...' : 'ストックする'}</Text>
           </Pressable>
         </View>
 
