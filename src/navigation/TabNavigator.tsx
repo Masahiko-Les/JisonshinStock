@@ -3,6 +3,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { User } from 'firebase/auth';
 import React from 'react';
 import { AccountScreen } from '../screens/AccountScreen';
+import { HomeScreen } from '../screens/HomeScreen';
 import { StockScreen } from '../screens/StockScreen';
 import { colors } from '../theme/colors';
 
@@ -21,6 +22,16 @@ export const TabNavigator = ({ user }: Props) => {
         tabBarInactiveTintColor: colors.textSecondary,
       }}
     >
+      <Tab.Screen
+        name="Home"
+        options={{
+          title: 'ホーム',
+          tabBarIcon: ({ color, size }) => <Ionicons name="home" size={size} color={color} />,
+        }}
+      >
+        {() => <HomeScreen user={user} />}
+      </Tab.Screen>
+
       <Tab.Screen
         name="Stock"
         options={{

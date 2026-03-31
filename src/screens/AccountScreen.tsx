@@ -1,13 +1,9 @@
 import { User } from 'firebase/auth';
-import React, { useEffect, useRef, useState } from 'react';
+import React from 'react';
 import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { AppHeader } from '../components/AppHeader';
-import { PlantGrowthCard, PlantGrowthCardRef } from '../components/PlantGrowthCard';
-import { WaterDropAnimation, WaterDropAnimationRef } from '../components/WaterDropAnimation';
-import { useWaterDrop } from '../contexts/WaterDropContext';
 import { authService } from '../services/authService';
-import { stockService } from '../services/stockService';
 import { colors, radius, spacing } from '../theme/colors';
 
 type Props = {
@@ -15,27 +11,6 @@ type Props = {
 };
 
 export const AccountScreen = ({ user }: Props) => {
-  const waterDropRef = useRef<WaterDropAnimationRef>(null);
-  const plantRef = useRef<PlantGrowthCardRef>(null);
-  const { shouldPlay, resetWaterDrop } = useWaterDrop();
-  const [stockCount, setStockCount] = useState(0);
-
-  useEffect(() => {
-    const unsubscribe = stockService.subscribeUserStocks(user.uid, (stocks) => {
-      setStockCount(stocks.length);
-    });
-
-    return unsubscribe;
-  }, [user.uid]);
-
-  useEffect(() => {
-    if (shouldPlay) {
-      waterDropRef.current?.play();
-      setTimeout(() => plantRef.current?.pulse(), 400);
-      resetWaterDrop();
-    }
-  }, [shouldPlay, resetWaterDrop]);
-
   const handleLogout = async () => {
     try {
       await authService.signOut();
@@ -68,9 +43,16 @@ export const AccountScreen = ({ user }: Props) => {
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
-      <AppHeader />
+      <View pointerEvents="none" style={styles.topBackdrop} />
+      <ScrollView
+        style={styles.scroll}
+        contentContainerStyle={styles.content}
+        keyboardShouldPersistTaps="handled"
+      >
+        <View style={styles.headerWrapper}>
+          <AppHeader />
+        </View>
 
-      <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
         <View style={styles.card}>
           <Text style={styles.title}>アカウント</Text>
           <View style={styles.emailRow}>
@@ -86,11 +68,6 @@ export const AccountScreen = ({ user }: Props) => {
             <Text style={styles.deleteText}>アカウント削除</Text>
           </Pressable>
         </View>
-
-        <View style={styles.growthSection}>
-          <PlantGrowthCard ref={plantRef} count={stockCount} plantType="default" />
-          <WaterDropAnimation ref={waterDropRef} />
-        </View>
       </ScrollView>
     </SafeAreaView>
   );
@@ -101,10 +78,25 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.background,
   },
+  topBackdrop: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: 240,
+    backgroundColor: colors.card,
+  },
+  scroll: {
+    backgroundColor: 'transparent',
+  },
   content: {
     paddingHorizontal: spacing.lg,
-    paddingTop: 50,
     paddingBottom: 60,
+    backgroundColor: colors.background,
+  },
+  headerWrapper: {
+    marginHorizontal: -spacing.lg,
+    marginBottom: spacing.md,
   },
   card: {
     backgroundColor: colors.card,
@@ -113,9 +105,6 @@ const styles = StyleSheet.create({
     borderColor: colors.border,
     padding: spacing.lg,
   },
-  growthSection: {
-    marginTop: spacing.md,
-  },
   title: {
     fontSize: 18,
     fontWeight: '700',
@@ -123,7 +112,7 @@ const styles = StyleSheet.create({
     marginBottom: spacing.xs,
   },
   emailRow: {
-    backgroundColor: colors.card,
+    backgroundColor: colors.background,
     borderRadius: radius.md,
     borderWidth: 1,
     borderColor: colors.border,
@@ -139,11 +128,6 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: colors.textPrimary,
     fontWeight: '600',
-  },
-  description: {
-    color: colors.textSecondary,
-    fontSize: 14,
-    marginBottom: spacing.lg,
   },
   logoutButton: {
     borderRadius: radius.md,

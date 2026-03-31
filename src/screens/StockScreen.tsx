@@ -1,22 +1,19 @@
 import { User } from 'firebase/auth';
-import { useNavigation } from '@react-navigation/native';
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
-    Alert,
-    Pressable,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    View,
+  Alert,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { AppHeader } from '../components/AppHeader';
 import { EditStockModal } from '../components/EditStockModal';
 import { RandomStockModal } from '../components/RandomStockModal';
 import { StockCard } from '../components/StockCard';
-import { useWaterDrop } from '../contexts/WaterDropContext';
-import { MAX_LENGTH, stockService } from '../services/stockService';
+import { stockService } from '../services/stockService';
 import { colors, radius, spacing } from '../theme/colors';
 import { Stock } from '../types';
 
@@ -25,12 +22,8 @@ type Props = {
 };
 
 export const StockScreen = ({ user }: Props) => {
-  const navigation = useNavigation<any>();
-  const { triggerWaterDrop } = useWaterDrop();
-  const [inputText, setInputText] = useState('');
   const [stocks, setStocks] = useState<Stock[]>([]);
   const [loadingStocks, setLoadingStocks] = useState(true);
-  const [posting, setPosting] = useState(false);
   const [editingStock, setEditingStock] = useState<Stock | null>(null);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showRandomModal, setShowRandomModal] = useState(false);
@@ -41,38 +34,8 @@ export const StockScreen = ({ user }: Props) => {
       setStocks(items);
       setLoadingStocks(false);
     });
-
     return unsubscribe;
   }, [user.uid]);
-
-  const countText = useMemo(() => `${inputText.length} / ${MAX_LENGTH}`, [inputText.length]);
-
-  const handleCreateStock = async () => {
-    try {
-      setPosting(true);
-      await stockService.createStock(user.uid, inputText);
-      setInputText('');
-
-      Alert.alert(
-        '投稿しました',
-        'できたことを1つストックしました。頑張りましたね。',
-        [
-          {
-            text: 'OK',
-            onPress: () => {
-              triggerWaterDrop();
-              navigation.navigate('Account');
-            },
-          },
-        ],
-      );
-    } catch (error) {
-      const message = error instanceof Error ? error.message : '投稿に失敗しました。';
-      Alert.alert('エラー', message);
-    } finally {
-      setPosting(false);
-    }
-  };
 
   const handleOpenEditModal = (stock: Stock) => {
     setEditingStock(stock);
@@ -80,10 +43,7 @@ export const StockScreen = ({ user }: Props) => {
   };
 
   const handleSaveEdit = async (text: string) => {
-    if (!editingStock) {
-      return;
-    }
-
+    if (!editingStock) return;
     try {
       await stockService.updateStock(user.uid, editingStock.id, text);
       setShowEditModal(false);
@@ -118,7 +78,6 @@ export const StockScreen = ({ user }: Props) => {
       setShowRandomModal(true);
       return;
     }
-
     const randomIndex = Math.floor(Math.random() * stocks.length);
     setRandomStock(stocks[randomIndex]);
     setShowRandomModal(true);
@@ -127,35 +86,20 @@ export const StockScreen = ({ user }: Props) => {
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       <View pointerEvents="none" style={styles.topBackdrop} />
-      <ScrollView style={styles.scroll} contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+      <ScrollView
+        style={styles.scroll}
+        contentContainerStyle={styles.content}
+        keyboardShouldPersistTaps="handled"
+      >
         <View style={styles.headerWrapper}>
           <AppHeader />
         </View>
+
         <Pressable style={styles.randomButton} onPress={handleRandomPlay}>
           <Text style={styles.randomButtonText}>ストックランダム再生</Text>
         </Pressable>
 
-        <View style={styles.postCard}>
-          <Text style={styles.sectionTitle}>今日できたこと</Text>
-          <TextInput
-            style={styles.input}
-            value={inputText}
-            onChangeText={setInputText}
-            multiline
-            maxLength={MAX_LENGTH}
-            placeholder={'できたこと・うれしかったことなどを\n書いてみましょう'}
-            placeholderTextColor={colors.textSecondary}
-            textAlignVertical="top"
-          />
-          <Text style={styles.count}>{countText}</Text>
-          <Pressable style={styles.postButton} onPress={handleCreateStock} disabled={posting}>
-            <Text style={styles.postButtonText}>{posting ? '投稿中...' : '投稿する'}</Text>
-          </Pressable>
-        </View>
-
-        <View style={styles.headerRow}>
-          <Text style={styles.sectionTitle}>あなたのストック</Text>
-        </View>
+        <Text style={styles.sectionTitle}>あなたのストック</Text>
 
         {loadingStocks ? (
           <Text style={styles.helperText}>読み込み中...</Text>
@@ -236,50 +180,10 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '700',
   },
-  postCard: {
-    backgroundColor: colors.card,
-    borderColor: colors.border,
-    borderWidth: 1,
-    borderRadius: radius.lg,
-    padding: spacing.md,
-    marginBottom: spacing.lg,
-  },
   sectionTitle: {
     fontSize: 18,
     fontWeight: '700',
     color: colors.textPrimary,
-    marginBottom: spacing.sm,
-  },
-  input: {
-    minHeight: 120,
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: radius.md,
-    backgroundColor: colors.background,
-    color: colors.textPrimary,
-    fontSize: 16,
-    lineHeight: 24,
-    padding: spacing.md,
-  },
-  count: {
-    textAlign: 'right',
-    color: colors.textSecondary,
-    fontSize: 12,
-    marginTop: spacing.xs,
-  },
-  postButton: {
-    marginTop: spacing.sm,
-    backgroundColor: colors.primary,
-    borderRadius: radius.md,
-    alignItems: 'center',
-    paddingVertical: spacing.sm,
-  },
-  postButtonText: {
-    color: colors.white,
-    fontSize: 16,
-    fontWeight: '700',
-  },
-  headerRow: {
     marginBottom: spacing.sm,
   },
   helperText: {
