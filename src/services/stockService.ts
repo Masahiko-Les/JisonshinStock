@@ -12,6 +12,7 @@ import {
 } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { Stock } from '../types';
+import { reviewService } from './reviewService';
 
 const MAX_LENGTH = 200;
 
@@ -44,6 +45,8 @@ export const stockService = {
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp(),
     });
+
+    await reviewService.notePostCreated();
   },
 
   async updateStock(uid: string, stockId: string, text: string) {
